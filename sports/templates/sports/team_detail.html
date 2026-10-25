@@ -1,0 +1,200 @@
+<!-- File: sports/templates/sports/team_detail.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="team-detail-container">
+
+    <!-- Team Header -->
+    <div class="team-header card">
+        <div class="team-info-main">
+            {% if team.logo %}
+                <img src="{{ team.logo.url }}" alt="{{ team.name }} Logo" class="team-logo-large">
+            {% else %}
+                <div class="team-logo-placeholder-large">{{ team.name|first|upper }}</div>
+            {% endif %}
+            <div class="team-meta">
+                <h1>{{ team.name }}</h1>
+                {% if team.nickname %}
+                    <p class="team-nickname">Nickname: {{ team.nickname }}</p>
+                {% endif %}
+                <p class="team-country-sport">{{ team.country }} | {{ team.sport|title }}</p>
+            </div>
+        </div>
+
+        {% if team.jersey_image %}
+        <div class="team-jersey-section">
+            <h3>Jersey</h3>
+            <img src="{{ team.jersey_image.url }}" alt="{{ team.name }} Jersey" class="team-jersey-image">
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Team Navigation Tabs -->
+    <div class="team-nav-tabs">
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link {% if active_section == 'squad' %}active{% endif %}"
+                   href="?section=squad">Squad</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if active_section == 'matches' %}active{% endif %}"
+                   href="?section=matches">Matches</a>
+            </li>
+            <!-- Add more tabs like 'Stats' if needed -->
+        </ul>
+    </div>
+
+    <!-- Section Content -->
+    <div class="team-section-content">
+
+        <!-- Squad Section -->
+        {% if active_section == 'squad' %}
+        <section id="squad-section" class="team-section active">
+            <h2>Current Squad</h2>
+            {% if players %}
+                <div class="players-grid">
+                    {% for player in players %}
+                    <div class="player-card card">
+                        {% if player.photo %}
+                            <img src="{{ player.photo.url }}" alt="{{ player.name }}" class="player-photo">
+                        {% else %}
+                            <div class="player-photo-placeholder">{{ player.name|first|upper }}</div>
+                        {% endif %}
+                        <div class="player-info">
+                            <!-- Make the player name a link -->
+                            <h3 class="player-name"><a href="{% url 'player_detail' player_id=player.id %}">{{ player.name }}</a></h3>
+                            {% if player.role %}
+                                <p class="player-role">{{ player.role }}</p>
+                            {% endif %}
+                            {% if player.jersey_number %}
+                                <p class="player-number">Jersey #: {{ player.jersey_number }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="no-players">No players found for this team.</p>
+            {% endif %}
+        </section>
+        {% endif %}
+
+        <!-- Matches Section -->
+        {% if active_section == 'matches' %}
+        <section id="matches-section" class="team-section active">
+            <h2>Matches for {{ team.name }}</h2>
+            {% if matches %}
+                <div class="matches-grid">
+                    {% for match in matches %}
+                    <div class="match-card">
+                        <!-- Make the entire card div clickable using onclick and a data attribute -->
+                        <div class="match-card-inner" onclick="window.location.href=this.dataset.matchUrl;" style="cursor: pointer;" data-match-url="{% url 'match_detail' match_id=match.id %}">
+                            <div class="match-header">
+                                {{ match.sport|title }} Match
+                                <!-- Status badge -->
+                                <span class="status status-{{ match.status }}">{{ match.status|upper }}</span>
+                            </div>
+                            <div class="match-content">
+                                <!-- Tournament Info - Clickable but stops event propagation -->
+                                {% if match.tournament %}
+                                <div class="tournament-info">
+                                    {% if match.tournament.logo %}
+                                        <img src="{{ match.tournament.logo.url }}" alt="{{ match.tournament.name }} Logo" class="tournament-logo">
+                                    {% endif %}
+                                    <!-- Tournament link stops propagation -->
+                                    <a href="{% url 'tournament_detail' tournament_id=match.tournament.id %}"
+                                       class="tournament-name-link"
+                                       onclick="event.stopPropagation();">
+                                        <span class="tournament-name">{{ match.tournament.name }}</span>
+                                    </a>
+                                </div>
+                                {% endif %}
+
+                                <div class="teams-container">
+                                    <div class="team home-team">
+                                        <div class="team-info">
+                                            {% if match.team1.logo %}
+                                            <!-- Make the team logo clickable -->
+                                            <a href="{% url 'team_detail' team_id=match.team1.id %}">
+                                                <img src="{{ match.team1.logo.url }}" alt="{{ match.team1.name }} Logo" class="team-logo">
+                                            </a>
+                                            {% else %}
+                                            <div class="team-logo placeholder">
+                                                <!-- Make the placeholder clickable -->
+                                                <a href="{% url 'team_detail' team_id=match.team1.id %}">{{ match.team1.name|first|upper }}</a>
+                                            </div>
+                                            {% endif %}
+                                            <!-- Make the team name clickable -->
+                                            <a href="{% url 'team_detail' team_id=match.team1.id %}"><span class="team-name">{{ match.team1.name }}</span></a>
+                                        </div>
+                                        {% if match.team1_score %}
+                                            <span class="team-score">{{ match.team1_score }}</span>
+                                             <!-- Add wickets for cricket if relevant -->
+                                            {% if match.sport == 'cricket' and match.cricket_team1_wickets is not None %}
+                                                <span class="team-wickets">/{{ match.cricket_team1_wickets }}</span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="vs">VS</div>
+
+                                    <div class="team away-team">
+                                        <div class="team-info">
+                                            {% if match.team2.logo %}
+                                            <!-- Make the team logo clickable -->
+                                            <a href="{% url 'team_detail' team_id=match.team2.id %}">
+                                                <img src="{{ match.team2.logo.url }}" alt="{{ match.team2.name }} Logo" class="team-logo">
+                                            </a>
+                                            {% else %}
+                                            <div class="team-logo placeholder">
+                                                <!-- Make the placeholder clickable -->
+                                                <a href="{% url 'team_detail' team_id=match.team2.id %}">{{ match.team2.name|first|upper }}</a>
+                                            </div>
+                                            {% endif %}
+                                            <!-- Make the team name clickable -->
+                                            <a href="{% url 'team_detail' team_id=match.team2.id %}"><span class="team-name">{{ match.team2.name }}</span></a>
+                                        </div>
+                                         {% if match.team2_score %}
+                                            <span class="team-score">{{ match.team2_score }}</span>
+                                             <!-- Add wickets for cricket if relevant -->
+                                            {% if match.sport == 'cricket' and match.cricket_team2_wickets is not None %}
+                                                <span class="team-wickets">/{{ match.cricket_team2_wickets }}</span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="match-details">
+                                     <!-- Display the live status message if available -->
+                                    {% if match.live_status_message %}
+                                        <span class="live-message">{{ match.live_status_message }}</span>
+                                    {% endif %}
+                                    {% if match.location %}
+                                    <span class="match-location">{{ match.location }}</span>
+                                    {% endif %}
+                                    {% if match.date %}
+                                    <span class="match-time">{{ match.date }}</span>
+                                    {% endif %}
+                                    <!-- Add sport-specific details to the card -->
+                                    {% if match.sport == 'cricket' and match.cricket_overs_played %}
+                                        <span class="match-overs">Overs: {{ match.cricket_overs_played }}</span>
+                                    {% elif match.sport == 'football' and match.football_current_time %}
+                                         <span class="match-time-display">Time: {{ match.football_current_time }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div> <!-- End of clickable match-card-inner div -->
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="no-matches">No matches found for this team.</p>
+            {% endif %}
+        </section>
+        {% endif %}
+
+    </div> <!-- End of team-section-content -->
+
+</div>
+{% endblock %}

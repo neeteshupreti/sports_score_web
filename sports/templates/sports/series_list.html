@@ -1,0 +1,232 @@
+<!-- File: sports/templates/sports/series_list.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="series-list-section">
+    <div class="series-header">
+        <h2>All Series</h2>
+        
+        <!-- Filter Button -->
+        <div class="series-filters">
+            <button id="filter-toggle" class="filter-button">
+                <span class="filter-icon">&#9776;</span> <!-- Hamburger menu icon -->
+                Filter
+            </button>
+            
+            <div id="filter-popup" class="filter-popup">
+                <div class="filter-popup-content">
+                    <span class="close-btn" id="close-popup">&times;</span>
+                    <h3>Filter Series</h3>
+                    <form id="series-filter-form" method="get" action="{% url 'series_list' %}">
+                        
+                        <!-- Sport Filter -->
+                        <div class="filter-group">
+                            <label for="sport-filter">Sport:</label>
+                            <select name="sport" id="sport-filter">
+                                <option value="">All Sports</option>
+                                {% for sport_key, sport_name in all_sports %}
+                                    <option value="{{ sport_key }}" {% if selected_sport == sport_key %}selected{% endif %}>{{ sport_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- Status Filter -->
+                        <div class="filter-group">
+                            <label for="status-filter">Status:</label>
+                            <select name="status" id="status-filter">
+                                <option value="all" {% if selected_status == 'all' %}selected{% endif %}>All</option>
+                                <option value="ongoing" {% if selected_status == 'ongoing' %}selected{% endif %}>Ongoing</option>
+                                <option value="upcoming" {% if selected_status == 'upcoming' %}selected{% endif %}>Upcoming</option>
+                                <option value="completed" {% if selected_status == 'completed' %}selected{% endif %}>Completed</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="apply-filters-btn">Apply Filters</button>
+                        <button type="button" id="clear-filters-btn" class="clear-filters-btn">Clear Filters</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- End of Filter Section -->
+        
+    </div>
+
+    <!-- Display Categorized Tournaments -->
+    
+    <!-- Ongoing Series -->
+    {% if categorized_tournaments.ongoing %}
+    <div class="series-category">
+        <h3>Ongoing Series</h3>
+        <div class="series-grid">
+            {% for tournament in categorized_tournaments.ongoing %}
+            <div class="series-card card">
+                <a href="{% url 'tournament_detail' tournament_id=tournament.id %}" class="series-card-link">
+                    {% if tournament.logo %}
+                        <img src="{{ tournament.logo.url }}" alt="{{ tournament.name }} Logo" class="series-logo">
+                    {% else %}
+                        <div class="series-logo-placeholder">{{ tournament.name|first|upper }}</div>
+                    {% endif %}
+                    <div class="series-info">
+                        <h4 class="series-name">{{ tournament.name }}</h4>
+                        <p class="series-sport">{{ tournament.sport|title }}</p>
+                        {% if tournament.start_date %}
+                            <p class="series-dates">{{ tournament.start_date }}{% if tournament.end_date and tournament.end_date != tournament.start_date %} - {{ tournament.end_date }}{% endif %}</p>
+                        {% endif %}
+                        <!-- Optional: Add a small "Live" indicator -->
+                        <span class="status status-live">LIVE</span>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Upcoming Series -->
+    {% if categorized_tournaments.upcoming %}
+    <div class="series-category">
+        <h3>Upcoming Series</h3>
+        <div class="series-grid">
+            {% for tournament in categorized_tournaments.upcoming %}
+            <div class="series-card card">
+                <a href="{% url 'tournament_detail' tournament_id=tournament.id %}" class="series-card-link">
+                    {% if tournament.logo %}
+                        <img src="{{ tournament.logo.url }}" alt="{{ tournament.name }} Logo" class="series-logo">
+                    {% else %}
+                        <div class="series-logo-placeholder">{{ tournament.name|first|upper }}</div>
+                    {% endif %}
+                    <div class="series-info">
+                        <h4 class="series-name">{{ tournament.name }}</h4>
+                        <p class="series-sport">{{ tournament.sport|title }}</p>
+                        {% if tournament.start_date %}
+                            <p class="series-dates">{{ tournament.start_date }}{% if tournament.end_date and tournament.end_date != tournament.start_date %} - {{ tournament.end_date }}{% endif %}</p>
+                        {% endif %}
+                        <!-- Optional: Add an "Upcoming" indicator -->
+                        <span class="status status-upcoming">UPCOMING</span>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Completed Series (at the bottom) -->
+    {% if categorized_tournaments.completed %}
+    <div class="series-category">
+        <h3>Completed Series</h3>
+        <div class="series-grid">
+            {% for tournament in categorized_tournaments.completed %}
+            <div class="series-card card">
+                <a href="{% url 'tournament_detail' tournament_id=tournament.id %}" class="series-card-link">
+                    {% if tournament.logo %}
+                        <img src="{{ tournament.logo.url }}" alt="{{ tournament.name }} Logo" class="series-logo">
+                    {% else %}
+                        <div class="series-logo-placeholder">{{ tournament.name|first|upper }}</div>
+                    {% endif %}
+                    <div class="series-info">
+                        <h4 class="series-name">{{ tournament.name }}</h4>
+                        <p class="series-sport">{{ tournament.sport|title }}</p>
+                        {% if tournament.start_date %}
+                            <p class="series-dates">{{ tournament.start_date }}{% if tournament.end_date and tournament.end_date != tournament.start_date %} - {{ tournament.end_date }}{% endif %}</p>
+                        {% endif %}
+                        <!-- Optional: Add a "Completed" indicator -->
+                        <span class="status status-completed">COMPLETED</span>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Handle case where no tournaments match filters -->
+    {% if not categorized_tournaments.ongoing and not categorized_tournaments.upcoming and not categorized_tournaments.completed %}
+        <p class="no-series">No series found matching the selected filters.</p>
+    {% endif %}
+
+</section>
+
+<!-- Include JavaScript for popup functionality -->
+<script>
+    // --- Series Filter Popup Functionality ---
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("DOM fully loaded and parsed.");
+        const filterToggle = document.getElementById('filter-toggle');
+        const filterPopup = document.getElementById('filter-popup');
+        const closePopup = document.getElementById('close-popup');
+        const clearFiltersBtn = document.getElementById('clear-filters-btn');
+        const filterForm = document.getElementById('series-filter-form');
+
+        // Debugging: Check if elements are found
+        console.log("filterToggle:", filterToggle);
+        console.log("filterPopup:", filterPopup);
+        console.log("closePopup:", closePopup);
+        console.log("clearFiltersBtn:", clearFiltersBtn);
+        console.log("filterForm:", filterForm);
+
+        if (filterToggle && filterPopup && closePopup && clearFiltersBtn && filterForm) {
+            
+            // Function to open the popup
+            function openPopup() {
+                console.log("Opening popup");
+                filterPopup.style.display = 'block';
+                document.body.style.overflow = 'hidden'; // Prevent background scroll
+            }
+
+            // Function to close the popup
+            function closePopupFunc() {
+                console.log("Closing popup");
+                filterPopup.style.display = 'none';
+                document.body.style.overflow = ''; // Restore background scroll
+            }
+
+            // Open popup when filter button is clicked
+            filterToggle.addEventListener('click', function(event) {
+                console.log("Filter button clicked");
+                event.stopPropagation(); // Prevent event bubbling
+                openPopup();
+            });
+
+            // Close popup when 'x' is clicked
+            closePopup.addEventListener('click', function(event) {
+                console.log("'X' button clicked");
+                event.stopPropagation();
+                closePopupFunc();
+            });
+
+            // Close popup when clicking outside the content
+            filterPopup.addEventListener('click', function(event) {
+                console.log("Popup background clicked");
+                // Check if the click target is the popup background itself, not its content
+                if (event.target === filterPopup) {
+                    closePopupFunc();
+                }
+            });
+
+            // Clear filters
+            clearFiltersBtn.addEventListener('click', function() {
+                console.log("Clear filters button clicked");
+                // Reset form fields
+                filterForm.reset();
+                // Submit the form to reload the page without filters
+                filterForm.submit();
+            });
+
+            // Optional: Close popup on pressing Escape key
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape' && filterPopup.style.display === 'block') {
+                    console.log("Escape key pressed");
+                    closePopupFunc();
+                }
+            });
+            
+            console.log("Event listeners attached.");
+        } else {
+            console.error("One or more required elements for the filter popup were not found.");
+        }
+    });
+    // --- End of Series Filter Popup Functionality ---
+</script>
+{% endblock %}

@@ -1,0 +1,360 @@
+<!-- File: sports/templates/sports/scores.html -->
+{% extends 'base.html' %} {% load static %} {% block content %}
+<div class="container">
+    <!-- Page Header with Filter -->
+    <div class="page-header-modern">
+        <div class="section-header">
+            <h2>Live & Completed Scores</h2>
+            <div class="section-divider"></div>
+        </div>
+        <!-- Sport Filter Dropdown -->
+        <div class="filter-dropdown-modern">
+            <form method="get" action="{% url 'scores' %}" class="filter-form">
+                <label for="sport-filter">Filter by Sport:</label>
+                <select
+                    name="sport"
+                    id="sport-filter"
+                    class="filter-select"
+                    onchange="this.form.submit()"
+                >
+                    <option value="">All Sports</option>
+                    {% for sport_key, sport_name in all_sports %}
+                    <option
+                        value="{{ sport_key }}"
+                        {%
+                        if
+                        selected_sport=""
+                        ="sport_key"
+                        %}selected{%
+                        endif
+                        %}
+                    >
+                        {{ sport_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+    </div>
+
+    <!-- Live Matches Section -->
+    <section class="live-scores-section">
+        <div class="section-header">
+            <h3>Live Matches</h3>
+            <div class="section-divider"></div>
+        </div>
+        {% if live_matches %}
+        <div class="matches-grid-modern">
+            {% for match in live_matches %}
+            <div class="match-card-modern">
+                <div
+                    class="modern-card"
+                    onclick="window.location.href = this.dataset.matchUrl"
+                    style="cursor: pointer"
+                    data-match-url="{% url 'match_detail' match_id=match.id %}"
+                >
+                    <div class="modern-header">
+                        <span class="sport-type"
+                            >{{ match.sport|title }} Match</span
+                        >
+                        <span class="status status-live"
+                            >{{ match.status|upper }}</span
+                        >
+                    </div>
+                    <div class="match-content-modern">
+                        <!-- Tournament Info -->
+                        {% if match.tournament %}
+                        <div class="tournament-info">
+                            {% if match.tournament.logo %}
+                            <img
+                                src="{{ match.tournament.logo.url }}"
+                                alt="{{ match.tournament.name }} Logo"
+                                class="tournament-logo"
+                            />
+                            {% endif %}
+                            <a
+                                href="{% url 'tournament_detail' tournament_id=match.tournament.id %}"
+                                class="tournament-name-link"
+                                onclick="event.stopPropagation()"
+                            >
+                                <span class="tournament-name"
+                                    >{{ match.tournament.name }}</span
+                                >
+                            </a>
+                        </div>
+                        {% endif %}
+
+                        <div class="teams-container">
+                            <div class="team home-team">
+                                <div class="team-info">
+                                    {% if match.team1.logo %}
+                                    <a
+                                        href="{% url 'team_detail' team_id=match.team1.id %}"
+                                        onclick="event.stopPropagation()"
+                                    >
+                                        <img
+                                            src="{{ match.team1.logo.url }}"
+                                            alt="{{ match.team1.name }} Logo"
+                                            class="team-logo"
+                                        />
+                                    </a>
+                                    {% else %}
+                                    <div class="team-logo placeholder">
+                                        <a
+                                            href="{% url 'team_detail' team_id=match.team1.id %}"
+                                            onclick="event.stopPropagation()"
+                                            >{{ match.team1.name|first|upper
+                                            }}</a
+                                        >
+                                    </div>
+                                    {% endif %}
+                                    <a
+                                        href="{% url 'team_detail' team_id=match.team1.id %}"
+                                        class="team-name"
+                                        onclick="event.stopPropagation()"
+                                        >{{ match.team1.name }}</a
+                                    >
+                                </div>
+                                <span class="team-score"
+                                    >{{ match.team1_score }}</span
+                                >
+                                {% if match.sport == 'cricket' and
+                                match.cricket_team1_wickets is not None %}
+                                <span class="team-wickets"
+                                    >/{{ match.cricket_team1_wickets }}</span
+                                >
+                                {% endif %}
+                            </div>
+
+                            <div class="vs">VS</div>
+
+                            <div class="team away-team">
+                                <div class="team-info">
+                                    {% if match.team2.logo %}
+                                    <a
+                                        href="{% url 'team_detail' team_id=match.team2.id %}"
+                                        onclick="event.stopPropagation()"
+                                    >
+                                        <img
+                                            src="{{ match.team2.logo.url }}"
+                                            alt="{{ match.team2.name }} Logo"
+                                            class="team-logo"
+                                        />
+                                    </a>
+                                    {% else %}
+                                    <div class="team-logo placeholder">
+                                        <a
+                                            href="{% url 'team_detail' team_id=match.team2.id %}"
+                                            onclick="event.stopPropagation()"
+                                            >{{ match.team2.name|first|upper
+                                            }}</a
+                                        >
+                                    </div>
+                                    {% endif %}
+                                    <a
+                                        href="{% url 'team_detail' team_id=match.team2.id %}"
+                                        class="team-name"
+                                        onclick="event.stopPropagation()"
+                                        >{{ match.team2.name }}</a
+                                    >
+                                </div>
+                                <span class="team-score"
+                                    >{{ match.team2_score }}</span
+                                >
+                                {% if match.sport == 'cricket' and
+                                match.cricket_team2_wickets is not None %}
+                                <span class="team-wickets"
+                                    >/{{ match.cricket_team2_wickets }}</span
+                                >
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="match-details">
+                            {% if match.live_status_message %}
+                            <span class="live-message"
+                                >{{ match.live_status_message }}</span
+                            >
+                            {% endif %} {% if match.location %}
+                            <span class="match-location"
+                                >{{ match.location }}</span
+                            >
+                            {% endif %} {% if match.date %}
+                            <span class="match-time"
+                                >{{ match.date|time }}</span
+                            >
+                            {% endif %} {% if match.sport == 'cricket' and
+                            match.cricket_overs_played %}
+                            <span class="match-overs"
+                                >Overs: {{ match.cricket_overs_played }}</span
+                            >
+                            {% elif match.sport == 'football' and
+                            match.football_current_time %}
+                            <span class="match-time-display"
+                                >Time: {{ match.football_current_time }}</span
+                            >
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p class="no-matches">
+                No live matches{% if selected_sport %} for {{
+                selected_sport|title }}{% endif %} at the moment.
+            </p>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- Completed Matches Section -->
+    <section class="completed-matches-section">
+        <div class="section-header">
+            <h3>Completed Matches</h3>
+            <div class="section-divider"></div>
+        </div>
+        {% if completed_matches %}
+        <div class="matches-grid-modern">
+            {% for match in completed_matches %}
+            <div class="match-card-modern">
+                <div
+                    class="modern-card"
+                    onclick="window.location.href = this.dataset.matchUrl"
+                    style="cursor: pointer"
+                    data-match-url="{% url 'match_detail' match_id=match.id %}"
+                >
+                    <div class="modern-header">
+                        <span class="sport-type"
+                            >{{ match.sport|title }} Match</span
+                        >
+                        <span class="status status-completed"
+                            >{{ match.status|upper }}</span
+                        >
+                    </div>
+                    <div class="match-content-modern">
+                        <!-- Tournament Info -->
+                        {% if match.tournament %}
+                        <div class="tournament-info">
+                            {% if match.tournament.logo %}
+                            <img
+                                src="{{ match.tournament.logo.url }}"
+                                alt="{{ match.tournament.name }} Logo"
+                                class="tournament-logo"
+                            />
+                            {% endif %}
+                            <a
+                                href="{% url 'tournament_detail' tournament_id=match.tournament.id %}"
+                                class="tournament-name-link"
+                                onclick="event.stopPropagation()"
+                            >
+                                <span class="tournament-name"
+                                    >{{ match.tournament.name }}</span
+                                >
+                            </a>
+                        </div>
+                        {% endif %}
+
+                        <div class="teams-container">
+                            <div class="team home-team">
+                                <div class="team-info">
+                                    {% if match.team1.logo %}
+                                    <a
+                                        href="{% url 'team_detail' team_id=match.team1.id %}"
+                                        onclick="event.stopPropagation()"
+                                    >
+                                        <img
+                                            src="{{ match.team1.logo.url }}"
+                                            alt="{{ match.team1.name }} Logo"
+                                            class="team-logo"
+                                        />
+                                    </a>
+                                    {% else %}
+                                    <div class="team-logo placeholder">
+                                        <a
+                                            href="{% url 'team_detail' team_id=match.team1.id %}"
+                                            onclick="event.stopPropagation()"
+                                            >{{ match.team1.name|first|upper
+                                            }}</a
+                                        >
+                                    </div>
+                                    {% endif %}
+                                    <a
+                                        href="{% url 'team_detail' team_id=match.team1.id %}"
+                                        class="team-name"
+                                        onclick="event.stopPropagation()"
+                                        >{{ match.team1.name }}</a
+                                    >
+                                </div>
+                                <span class="team-score"
+                                    >{{ match.team1_score }}</span
+                                >
+                            </div>
+
+                            <div class="vs">VS</div>
+
+                            <div class="team away-team">
+                                <div class="team-info">
+                                    {% if match.team2.logo %}
+                                    <a
+                                        href="{% url 'team_detail' team_id=match.team2.id %}"
+                                        onclick="event.stopPropagation()"
+                                    >
+                                        <img
+                                            src="{{ match.team2.logo.url }}"
+                                            alt="{{ match.team2.name }} Logo"
+                                            class="team-logo"
+                                        />
+                                    </a>
+                                    {% else %}
+                                    <div class="team-logo placeholder">
+                                        <a
+                                            href="{% url 'team_detail' team_id=match.team2.id %}"
+                                            onclick="event.stopPropagation()"
+                                            >{{ match.team2.name|first|upper
+                                            }}</a
+                                        >
+                                    </div>
+                                    {% endif %}
+                                    <a
+                                        href="{% url 'team_detail' team_id=match.team2.id %}"
+                                        class="team-name"
+                                        onclick="event.stopPropagation()"
+                                        >{{ match.team2.name }}</a
+                                    >
+                                </div>
+                                <span class="team-score"
+                                    >{{ match.team2_score }}</span
+                                >
+                            </div>
+                        </div>
+
+                        <div class="match-details">
+                            {% if match.location %}
+                            <span class="match-location"
+                                >{{ match.location }}</span
+                            >
+                            {% endif %} {% if match.date %}
+                            <span class="match-time"
+                                >{{ match.date|date:"M d, Y" }}</span
+                            >
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p class="no-matches">
+                No completed matches{% if selected_sport %} for {{
+                selected_sport|title }}{% endif %} found.
+            </p>
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

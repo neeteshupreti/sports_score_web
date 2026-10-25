@@ -1,0 +1,142 @@
+<!-- File: sports/templates/sports/search.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="search-results">
+    <div class="search-header">
+        <h2>Search Results for "{{ query }}"</h2>
+
+        <div class="search-filters">
+            <form method="get" action="{% url 'search' %}">
+                <input type="hidden" name="q" value="{{ query }}">
+
+                <div class="filter-group">
+                    <label for="type">Filter by:</label>
+                    <select name="type" id="type" onchange="this.form.submit()">
+                        <option value="all" {% if filter_type == 'all' %}selected{% endif %}>All</option>
+                        <option value="teams" {% if filter_type == 'teams' %}selected{% endif %}>Teams</option>
+                        <option value="matches" {% if filter_type == 'matches' %}selected{% endif %}>Matches</option>
+                        <option value="players" {% if filter_type == 'players' %}selected{% endif %}>Players</option> <!-- Add Players option -->
+                        <option value="blog" {% if filter_type == 'blog' %}selected{% endif %}>Blog Posts</option>
+                    </select>
+                </div>
+
+                {% if filter_type == 'matches' or filter_type == 'all' %}
+                <div class="filter-group">
+                    <label for="status">Match Status:</label>
+                    <select name="status" id="status" onchange="this.form.submit()">
+                        <option value="all" {% if match_status == 'all' %}selected{% endif %}>All Matches</option>
+                        <option value="upcoming" {% if match_status == 'upcoming' %}selected{% endif %}>Upcoming</option>
+                        <option value="live" {% if match_status == 'live' %}selected{% endif %}>Live</option>
+                        <option value="completed" {% if match_status == 'completed' %}selected{% endif %}>Completed</option>
+                        <option value="delayed" {% if match_status == 'delayed' %}selected{% endif %}>Delayed</option> <!-- Add Delayed -->
+                    </select>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <!-- Teams Results -->
+    {% if filter_type == 'all' or filter_type == 'teams' %}
+    {% if results.teams %}
+    <section class="teams-results">
+        <h3>Teams</h3>
+        <div class="results-grid">
+            {% for team in results.teams %}
+            <div class="result-card" onclick="window.location.href='{% url 'team_detail' team_id=team.id %}';" style="cursor: pointer;">
+                <h4><a href="{% url 'team_detail' team_id=team.id %}">{{ team.name }}</a></h4>
+                <p>Country: {{ team.country }} | Sport: {{ team.sport|title }}</p>
+                {% if team.nickname %}
+                <p><small>Nickname: {{ team.nickname }}</small></p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+    {% endif %}
+
+    <!-- Matches Results -->
+    {% if filter_type == 'all' or filter_type == 'matches' %}
+    {% if results.matches %}
+    <section class="matches-results">
+        <h3>Matches</h3>
+        <div class="results-grid">
+            {% for match in results.matches %}
+            <div class="result-card" onclick="window.location.href='{% url 'match_detail' match_id=match.id %}';" style="cursor: pointer;">
+                <h4><a href="{% url 'match_detail' match_id=match.id %}">{{ match.team1.name }} vs {{ match.team2.name }}</a></h4>
+                <p>{{ match.sport|title }} Match | Status:
+                    <span class="status status-{{ match.status }}">{{ match.status|upper }}</span>
+                </p>
+                <p>Location: {{ match.location }} | Date: {{ match.date }}</p>
+                {% if match.tournament %}
+                <p><small>Series: <a href="{% url 'tournament_detail' tournament_id=match.tournament.id %}">{{ match.tournament.name }}</a></small></p>
+                {% endif %}
+                {% if match.team1_score is not None and match.team2_score is not None %}
+                <p>Score: {{ match.team1_score }} - {{ match.team2_score }}
+                    {% if match.sport == 'cricket' and match.cricket_team1_wickets is not None %}
+                    ({{ match.cricket_team1_wickets }}) /
+                    {% endif %}
+                    {% if match.sport == 'cricket' and match.cricket_team2_wickets is not None %}
+                    ({{ match.cricket_team2_wickets }})
+                    {% endif %}
+                </p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+    {% endif %}
+
+    <!-- Players Results -->
+    {% if filter_type == 'all' or filter_type == 'players' %}
+    {% if results.players %}
+    <section class="players-results">
+        <h3>Players</h3>
+        <div class="results-grid">
+            {% for player in results.players %}
+            <div class="result-card" onclick="window.location.href='{% url 'player_detail' player_id=player.id %}';" style="cursor: pointer;">
+                <h4><a href="{% url 'player_detail' player_id=player.id %}">{{ player.name }}</a></h4>
+                <p>
+                    {% if player.team %}
+                    Playing for <a href="{% url 'team_detail' team_id=player.team.id %}">{{ player.team.name }}</a> |
+                    {% endif %}
+                    {{ player.role|default:"Player" }}
+                    {% if player.jersey_number %}
+                    | Jersey #{{ player.jersey_number }}
+                    {% endif %}
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+    {% endif %}
+
+    <!-- Blog Posts Results -->
+    {% if filter_type == 'all' or filter_type == 'blog' %}
+    {% if results.blog_posts %}
+    <section class="blog-results">
+        <h3>Blog Posts</h3>
+        <div class="results-grid">
+            {% for post in results.blog_posts %}
+            <div class="result-card" onclick="window.location.href='{% url 'blog_detail' blog_id=post.id %}';" style="cursor: pointer;">
+                <h4><a href="{% url 'blog_detail' blog_id=post.id %}">{{ post.title }}</a></h4>
+                <p>By {{ post.author.username }} on {{ post.created_at|date:"M d, Y" }}</p>
+                <p>{{ post.content|truncatewords:30 }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+    {% endif %}
+
+    <!-- No Results Message -->
+    {% if not results.teams and not results.matches and not results.players and not results.blog_posts and query %}
+    <p class="no-results">No results found for "{{ query }}".</p>
+    {% endif %}
+</div>
+{% endblock %}

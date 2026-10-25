@@ -1,0 +1,18 @@
+{% extends "admin/change_form.html" %}
+{% load static %}
+
+{% block admin_change_form_document_ready %}
+{{ block.super }}
+<script>
+(function($) {
+    // Add a note about team filtering
+    $(document).ready(function() {
+        // Add help text below sport field
+        $('#id_sport').after('<p class="help" style="margin-top: 5px;">Select a sport to filter available teams and tournaments.</p>');
+        
+        // Add help text below tournament field
+        $('#id_tournament').after('<p class="help" style="margin-top: 5px;">Selecting a tournament will automatically set the sport filter.</p>');
+    });
+})(django.jQuery);
+</script>
+{% endblock %}

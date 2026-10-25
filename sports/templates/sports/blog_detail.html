@@ -1,0 +1,48 @@
+<!-- File: sports/templates/sports/blog_detail.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<article class="blog-post-detail card">
+    <header class="blog-post-header">
+        <h1>{{ post.title }}</h1>
+        <div class="blog-post-meta">
+            <span class="author">By {{ post.author.username }}</span>
+            <span class="date">Published on {{ post.created_at|date:"F d, Y" }}</span>
+        </div>
+    </header>
+
+    <div class="blog-post-content">
+        {% if post.image %}
+            <img src="{{ post.image.url }}" alt="{{ post.title }}" class="blog-post-image">
+        {% endif %}
+        <div class="blog-post-text">
+            {{ post.content|linebreaks }} <!-- Use linebreaks filter to preserve line breaks -->
+        </div>
+    </div>
+
+    <!-- Optional: Related Posts Section -->
+    
+    {% if related_posts %}
+    <section class="related-posts-section">
+        <h2>Related Posts</h2>
+        <div class="related-posts-grid">
+            {% for related_post in related_posts %}
+                <div class="related-post-card">
+                    <h3><a href="{% url 'blog_detail' blog_id=related_post.id %}">{{ related_post.title }}</a></h3>
+                    <p class="date">{{ related_post.created_at|date:"M d, Y" }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+   
+
+    <!-- --- Fix: Update the footer section --->
+    <footer class="blog-post-footer">
+        <!-- Link back to the homepage -->
+        <a href="{% url 'home' %}" class="back-link">&larr; Back to Home</a>
+    </footer>
+    <!-- --- End of fix --- -->
+</article>
+{% endblock %}

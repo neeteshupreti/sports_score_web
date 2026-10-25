@@ -1,0 +1,13 @@
+# Django
+Django==6.0.3
+
+# Django REST Framework
+djangorestframework==3.17.1
+django-filter==25.2
+
+# Image handling (for team/tournament logos)
+Pillow==12.2.0
+
+# Dependencies (pinned to installed versions)
+asgiref==3.11.1
+sqlparse==0.5.5

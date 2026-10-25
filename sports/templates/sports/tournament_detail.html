@@ -1,0 +1,245 @@
+<!-- File: sports/templates/sports/tournament_detail.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="tournament-detail-container">
+
+    <!-- Tournament Header -->
+    <div class="tournament-header card">
+        <div class="tournament-info">
+            {% if tournament.logo %}
+                <img src="{{ tournament.logo.url }}" alt="{{ tournament.name }} Logo" class="tournament-logo-large">
+            {% else %}
+                <div class="tournament-logo-placeholder">{{ tournament.name|first|upper }}</div>
+            {% endif %}
+            <div class="tournament-meta">
+                <h1>{{ tournament.name }}</h1>
+                <p class="tournament-sport">Sport: {{ tournament.sport|title }}</p>
+                {% if tournament.start_date %}
+                    <p class="tournament-dates">
+                        Dates: {{ tournament.start_date }}
+                        {% if tournament.end_date and tournament.end_date != tournament.start_date %}
+                            - {{ tournament.end_date }}
+                        {% endif %}
+                    </p>
+                {% endif %}
+                {% if tournament.location %}
+                    <p class="tournament-location">Location: {{ tournament.location }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Tournament Navigation Tabs -->
+    <div class="tournament-nav-tabs">
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link {% if active_section == 'matches' %}active{% endif %}"
+                   href="?section=matches">Matches</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if active_section == 'standings' %}active{% endif %}"
+                   href="?section=standings">Standings</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if active_section == 'records' %}active{% endif %}"
+                   href="?section=records">Records</a>
+            </li>
+            <!-- Add more tabs if needed -->
+        </ul>
+    </div>
+
+    <!-- Section Content -->
+    <div class="tournament-section-content">
+
+        <!-- Matches Section -->
+        {% if active_section == 'matches' %}
+        <section id="matches-section" class="tournament-section active">
+            <h2>Matches in {{ tournament.name }}</h2>
+
+            {% if matches %}
+                <div class="matches-grid">
+                    {% for match in matches %}
+                    <div class="match-card">
+                        <!-- Make the entire card div clickable using onclick and a data attribute -->
+                        <div class="match-card-inner" onclick="window.location.href=this.dataset.matchUrl;" style="cursor: pointer;" data-match-url="{% url 'match_detail' match_id=match.id %}">
+                            <div class="match-header">
+                                {{ match.sport|title }} Match
+                                <!-- Status badge -->
+                                <span class="status status-{{ match.status }}">{{ match.status|upper }}</span>
+                            </div>
+                            <div class="match-content">
+                                <div class="teams-container">
+                                    <div class="team home-team">
+                                        <div class="team-info">
+                                            {% if match.team1.logo %}
+                                            <!-- Make the team logo clickable -->
+                                            <a href="{% url 'team_detail' team_id=match.team1.id %}">
+                                                <img src="{{ match.team1.logo.url }}" alt="{{ match.team1.name }} Logo" class="team-logo">
+                                            </a>
+                                            {% else %}
+                                            <div class="team-logo placeholder">
+                                                <!-- Make the placeholder clickable -->
+                                                <a href="{% url 'team_detail' team_id=match.team1.id %}">{{ match.team1.name|first|upper }}</a>
+                                            </div>
+                                            {% endif %}
+                                            <!-- Make the team name clickable -->
+                                            <a href="{% url 'team_detail' team_id=match.team1.id %}"><span class="team-name">{{ match.team1.name }}</span></a>
+                                        </div>
+                                        {% if match.team1_score %}
+                                            <span class="team-score">{{ match.team1_score }}</span>
+                                             <!-- Add wickets for cricket if relevant -->
+                                            {% if match.sport == 'cricket' and match.cricket_team1_wickets is not None %}
+                                                <span class="team-wickets">/{{ match.cricket_team1_wickets }}</span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="vs">VS</div>
+
+                                    <div class="team away-team">
+                                        <div class="team-info">
+                                            {% if match.team2.logo %}
+                                            <!-- Make the team logo clickable -->
+                                            <a href="{% url 'team_detail' team_id=match.team2.id %}">
+                                                <img src="{{ match.team2.logo.url }}" alt="{{ match.team2.name }} Logo" class="team-logo">
+                                            </a>
+                                            {% else %}
+                                            <div class="team-logo placeholder">
+                                                <!-- Make the placeholder clickable -->
+                                                <a href="{% url 'team_detail' team_id=match.team2.id %}">{{ match.team2.name|first|upper }}</a>
+                                            </div>
+                                            {% endif %}
+                                            <!-- Make the team name clickable -->
+                                            <a href="{% url 'team_detail' team_id=match.team2.id %}"><span class="team-name">{{ match.team2.name }}</span></a>
+                                        </div>
+                                         {% if match.team2_score %}
+                                            <span class="team-score">{{ match.team2_score }}</span>
+                                             <!-- Add wickets for cricket if relevant -->
+                                            {% if match.sport == 'cricket' and match.cricket_team2_wickets is not None %}
+                                                <span class="team-wickets">/{{ match.cricket_team2_wickets }}</span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="match-details">
+                                     <!-- Display the live status message if available -->
+                                    {% if match.live_status_message %}
+                                        <span class="live-message">{{ match.live_status_message }}</span>
+                                    {% endif %}
+                                    {% if match.location %}
+                                    <span class="match-location">{{ match.location }}</span>
+                                    {% endif %}
+                                    {% if match.date %}
+                                    <span class="match-time">{{ match.date }}</span>
+                                    {% endif %}
+                                    <!-- Add sport-specific details to the card -->
+                                    {% if match.sport == 'cricket' and match.cricket_overs_played %}
+                                        <span class="match-overs">Overs: {{ match.cricket_overs_played }}</span>
+                                    {% elif match.sport == 'football' and match.football_current_time %}
+                                         <span class="match-time-display">Time: {{ match.football_current_time }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div> <!-- End of clickable match-card-inner div -->
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="no-matches">No matches scheduled for this series yet.</p>
+            {% endif %}
+        </section>
+        {% endif %}
+
+        <!-- Standings Section -->
+        {% if active_section == 'standings' %}
+        <section id="standings-section" class="tournament-section active">
+            <h2>Standings for {{ tournament.name }}</h2>
+            {% if standings_data %}
+                <!-- Example table structure for standings -->
+                <div class="standings-table-container">
+                    <table class="standings-table">
+                        <thead>
+                            <tr>
+                                <th>Pos</th>
+                                <th>Team</th>
+                                <th>M</th> <!-- Matches -->
+                                <th>W</th> <!-- Wins -->
+                                <th>L</th> <!-- Losses -->
+                                <th>D</th> <!-- Draws -->
+                                <th>Pts</th> <!-- Points -->
+                                <!-- <th>NRR</th> Net Run Rate - if calculated -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stat in standings_data %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td> <!-- Position -->
+                                <td>
+                                    {% if stat.team.logo %}
+                                        <!-- Make the team logo clickable -->
+                                        <a href="{% url 'team_detail' team_id=stat.team.id %}">
+                                            <img src="{{ stat.team.logo.url }}" alt="{{ stat.team.name }} Logo" class="team-logo-small">
+                                        </a>
+                                    {% else %}
+                                        <div class="team-logo-placeholder-small">
+                                            <!-- Make the placeholder clickable -->
+                                            <a href="{% url 'team_detail' team_id=stat.team.id %}">{{ stat.team.name|first|upper }}</a>
+                                        </div>
+                                    {% endif %}
+                                    <!-- Link team name to team detail page -->
+                                    <a href="{% url 'team_detail' team_id=stat.team.id %}">{{ stat.team.name }}</a>
+                                </td>
+                                <td>{{ stat.matches_played }}</td>
+                                <td>{{ stat.wins }}</td>
+                                <td>{{ stat.losses }}</td>
+                                <td>{{ stat.draws }}</td>
+                                <td>{{ stat.points }}</td>
+                                <!-- <td>{{ stat.net_run_rate|floatformat:3 }}</td> -->
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="no-standings">Standings data is not available or could not be calculated.</p>
+            {% endif %}
+        </section>
+        {% endif %}
+
+        <!-- Records Section -->
+        {% if active_section == 'records' %}
+        <section id="records-section" class="tournament-section active">
+            <h2>Records in {{ tournament.name }}</h2>
+            {% if records_data %}
+                <!-- Example list structure for records -->
+                <div class="records-list">
+                    {% for record in records_data %}
+                    <div class="record-item card">
+                        <h4>{{ record.type }}</h4>
+                        <p class="record-value">{{ record.value }}</p>
+                        {% if record.player %}
+                            <p class="record-player">Player: {{ record.player }}</p>
+                        {% endif %}
+                        {% if record.team %}
+                            <p class="record-team">Team: {{ record.team }}</p>
+                        {% endif %}
+                        {% if record.match %}
+                            <p class="record-match">Match: {{ record.match }}</p>
+                        {% endif %}
+                        <p class="record-date">Date: {{ record.date }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="no-records">No records available for this series yet.</p>
+            {% endif %}
+        </section>
+        {% endif %}
+
+    </div> <!-- End of tournament-section-content -->
+
+</div>
+{% endblock %}

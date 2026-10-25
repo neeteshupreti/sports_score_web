@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="profile-container">
+    <section class="favorites-section">
+        <h2>Favorite Preferences</h2>
+        <form method="post" id="preferences-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label>Select Favorite Sports:</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="sport-cricket" name="favorite_sports" value="cricket" 
+                               {% if "cricket" in user_profile.favorite_sports %}checked{% endif %}>
+                        <label for="sport-cricket">Cricket</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="sport-football" name="favorite_sports" value="football" 
+                               {% if "football" in user_profile.favorite_sports %}checked{% endif %}>
+                        <label for="sport-football">Football</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="sport-volleyball" name="favorite_sports" value="volleyball" 
+                               {% if "volleyball" in user_profile.favorite_sports %}checked{% endif %}>
+                        <label for="sport-volleyball">Volleyball</label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Teams selection with dropdowns -->
+            <div class="form-group">
+                <label>Select Favorite Teams:</label>
+                
+                <!-- Cricket Teams Dropdown -->
+                <div class="dropdown-group" id="cricket-dropdown" style="display: none;">
+                    <div class="dropdown-header" onclick="toggleDropdown('cricket-teams')">
+                        <span>Cricket Teams</span>
+                        <span class="dropdown-arrow">▼</span>
+                    </div>
+                    <div class="dropdown-content" id="cricket-teams">
+                        <h4>Nepal Cricket Teams</h4>
+                        {% for team in nepal_teams %}
+                        {% if team.sport == 'cricket' %}
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="team-{{ team.id }}" name="favorite_teams" value="{{ team.id }}" 
+                                   {% if team in user_profile.favorite_teams.all %}checked{% endif %}>
+                            <label for="team-{{ team.id }}">{{ team.name }}</label>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                        
+                        <h4>India Cricket Teams</h4>
+                        {% for team in india_teams %}
+                        {% if team.sport == 'cricket' %}
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="team-{{ team.id }}" name="favorite_teams" value="{{ team.id }}" 
+                                   {% if team in user_profile.favorite_teams.all %}checked{% endif %}>
+                            <label for="team-{{ team.id }}">{{ team.name }}</label>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                        
+                        <h4>Other Cricket Teams</h4>
+                        {% for team in other_teams %}
+                        {% if team.sport == 'cricket' %}
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="team-{{ team.id }}" name="favorite_teams" value="{{ team.id }}" 
+                                   {% if team in user_profile.favorite_teams.all %}checked{% endif %}>
+                            <label for="team-{{ team.id }}">{{ team.name }}</label>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Football Teams Dropdown -->
+                <div class="dropdown-group" id="football-dropdown" style="display: none;">
+                    <div class="dropdown-header" onclick="toggleDropdown('football-teams')">
+                        <span>Football Teams</span>
+                        <span class="dropdown-arrow">▼</span>
+                    </div>
+                    <div class="dropdown-content" id="football-teams">
+                        <h4>Nepal Football Teams</h4>
+                        {% for team in nepal_teams %}
+                        {% if team.sport == 'football' %}
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="team-{{ team.id }}" name="favorite_teams" value="{{ team.id }}" 
+                                   {% if team in user_profile.favorite_teams.all %}checked{% endif %}>
+                            <label for="team-{{ team.id }}">{{ team.name }}</label>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                        
+                        <h4>India Football Teams</h4>
+                        {% for team in india_teams %}
+                        {% if team.sport == 'football' %}
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="team-{{ team.id }}" name="favorite_teams" value="{{ team.id }}" 
+                                   {% if team in user_profile.favorite_teams.all %}checked{% endif %}>
+                            <label for="team-{{ team.id }}">{{ team.name }}</label>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                        
+                        <h4>Other Football Teams</h4>
+                        {% for team in other_teams %}
+                        {% if team.sport == 'football' %}
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="team-{{ team.id }}" name="favorite_teams" value="{{ team.id }}" 
+                                   {% if team in user_profile.favorite_teams.all %}checked{% endif %}>
+                            <label for="team-{{ team.id }}">{{ team.name }}</label>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Volleyball Teams Dropdown -->
+                <div class="dropdown-group" id="volleyball-dropdown" style="display: none;">
+                    <div class="dropdown-header" onclick="toggleDropdown('volleyball-teams')">
+                        <span>Volleyball Teams</span>
+                        <span class="dropdown-arrow">▼</span>
+                    </div>
+                    <div class="dropdown-content" id="volleyball-teams">
+                        <h4>Nepal Volleyball Teams</h4>
+                        {% for team in nepal_teams %}
+                        {% if team.sport == 'volleyball' %}
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="team-{{ team.id }}" name="favorite_teams" value="{{ team.id }}" 
+                                   {% if team in user_profile.favorite_teams.all %}checked{% endif %}>
+                            <label for="team-{{ team.id }}">{{ team.name }}</label>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                        
+                        <h4>India Volleyball Teams</h4>
+                        {% for team in india_teams %}
+                        {% if team.sport == 'volleyball' %}
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="team-{{ team.id }}" name="favorite_teams" value="{{ team.id }}" 
+                                   {% if team in user_profile.favorite_teams.all %}checked{% endif %}>
+                            <label for="team-{{ team.id }}">{{ team.name }}</label>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                        
+                        <h4>Other Volleyball Teams</h4>
+                        {% for team in other_teams %}
+                        {% if team.sport == 'volleyball' %}
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="team-{{ team.id }}" name="favorite_teams" value="{{ team.id }}" 
+                                   {% if team in user_profile.favorite_teams.all %}checked{% endif %}>
+                            <label for="team-{{ team.id }}">{{ team.name }}</label>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit">Save Preferences</button>
+        </form>
+        
+        <!-- Logout section at the bottom of the profile page -->
+        <div class="logout-section">
+            <h2>Account Settings</h2>
+            <div class="account-actions">
+                <p>Logged in as <strong>{{ user.username }}</strong></p>
+                <form action="{% url 'logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="logout-btn">Logout</button>
+                </form>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+// Function to toggle dropdown visibility
+function toggleDropdown(id) {
+    const dropdown = document.getElementById(id);
+    const arrow = dropdown.previousElementSibling.querySelector('.dropdown-arrow');
+    
+    if (dropdown.style.display === 'block') {
+        dropdown.style.display = 'none';
+        arrow.textContent = '▼';
+    } else {
+        dropdown.style.display = 'block';
+        arrow.textContent = '▲';
+    }
+}
+
+// Show/hide team dropdowns based on selected sports
+document.addEventListener('DOMContentLoaded', function() {
+    const cricketCheckbox = document.getElementById('sport-cricket');
+    const footballCheckbox = document.getElementById('sport-football');
+    const volleyballCheckbox = document.getElementById('sport-volleyball');
+    
+    const cricketDropdown = document.getElementById('cricket-dropdown');
+    const footballDropdown = document.getElementById('football-dropdown');
+    const volleyballDropdown = document.getElementById('volleyball-dropdown');
+    
+    // Initial state based on checked sports
+    if (cricketCheckbox.checked) cricketDropdown.style.display = 'block';
+    if (footballCheckbox.checked) footballDropdown.style.display = 'block';
+    if (volleyballCheckbox.checked) volleyballDropdown.style.display = 'block';
+    
+    // Add event listeners
+    cricketCheckbox.addEventListener('change', function() {
+        cricketDropdown.style.display = this.checked ? 'block' : 'none';
+    });
+    
+    footballCheckbox.addEventListener('change', function() {
+        footballDropdown.style.display = this.checked ? 'block' : 'none';
+    });
+    
+    volleyballCheckbox.addEventListener('change', function() {
+        volleyballDropdown.style.display = this.checked ? 'block' : 'none';
+    });
+    
+    // Open dropdowns that have selected teams
+    document.querySelectorAll('input[name="favorite_teams"]').forEach(checkbox => {
+        if (checkbox.checked) {
+            const sport = checkbox.closest('.dropdown-content').id.split('-')[0];
+            document.getElementById(`${sport}-dropdown`).style.display = 'block';
+            document.getElementById(`${sport}-dropdown`).querySelector('.dropdown-content').style.display = 'block';
+            document.getElementById(`${sport}-dropdown`).querySelector('.dropdown-arrow').textContent = '▲';
+        }
+    });
+});
+</script>
+{% endblock %}

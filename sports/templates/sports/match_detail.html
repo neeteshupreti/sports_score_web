@@ -1,0 +1,224 @@
+<!-- File: sports/templates/sports/match_detail.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="match-detail-container">
+
+    <!-- Match Header -->
+    <div class="match-header card">
+        <h1>{{ match.team1.name }} vs {{ match.team2.name }}</h1>
+        {% if match.tournament %}
+            <p class="tournament-name-link">Series: <a href="{% url 'tournament_detail' tournament_id=match.tournament.id %}">{{ match.tournament.name }}</a></p>
+        {% endif %}
+        <p class="match-meta">{{ match.sport|title }} | {{ match.date }} | {{ match.location }}</p>
+        <div class="match-status-display">
+            <span class="status status-{{ match.status }}">{{ match.status|upper }}</span>
+            {% if match.live_status_message %}
+                <span class="live-message">{{ match.live_status_message }}</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Live Score/Match Info Section -->
+    <div class="live-score-section card">
+        {% if match.sport == 'cricket' %}
+            <div class="cricket-scoreboard">
+                <div class="team-score-card">
+                    <!-- Make the team name in the header a link -->
+                    <h3><a href="{% url 'team_detail' team_id=match.team1.id %}">{{ match.team1.name }}</a></h3>
+                    <p class="score">{{ match.team1_score }}/{{ match.cricket_team1_wickets|default:"-" }}</p>
+                    {% if match.cricket_overs_played %}
+                        <p class="overs">Overs: {{ match.cricket_overs_played }}</p>
+                    {% endif %}
+                </div>
+                <div class="vs-divider">VS</div>
+                <div class="team-score-card">
+                     <!-- Make the team name in the header a link -->
+                    <h3><a href="{% url 'team_detail' team_id=match.team2.id %}">{{ match.team2.name }}</a></h3>
+                    <p class="score">{{ match.team2_score }}/{{ match.cricket_team2_wickets|default:"-" }}</p>
+                     {% if match.cricket_overs_played %}
+                        <p class="overs">Overs: {{ match.cricket_overs_played }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% if match.status == 'live' %}
+            <div class="current-players">
+                <h4>Current Players</h4>
+                <p>
+                    {% if match.cricket_current_batter_team1 %}
+                        <strong>{{ match.team1.name }} Batter:</strong> <a href="{% url 'player_detail' player_id=match.cricket_current_batter_team1.id %}">{{ match.cricket_current_batter_team1.name }}</a>
+                    {% endif %}
+                    {% if match.cricket_current_bowler_team2 %}
+                        <strong>Bowler:</strong> <a href="{% url 'player_detail' player_id=match.cricket_current_bowler_team2.id %}">{{ match.cricket_current_bowler_team2.name }}</a> ({{ match.team2.name }})
+                    {% endif %}
+                </p>
+                <p>
+                    {% if match.cricket_current_batter_team2 %}
+                        <strong>{{ match.team2.name }} Batter:</strong> <a href="{% url 'player_detail' player_id=match.cricket_current_batter_team2.id %}">{{ match.cricket_current_batter_team2.name }}</a>
+                    {% endif %}
+                    {% if match.cricket_current_bowler_team1 %}
+                        <strong>Bowler:</strong> <a href="{% url 'player_detail' player_id=match.cricket_current_bowler_team1.id %}">{{ match.cricket_current_bowler_team1.name }}</a> ({{ match.team1.name }})
+                    {% endif %}
+                </p>
+            </div>
+            {% endif %}
+        {% elif match.sport == 'football' %}
+             <div class="football-scoreboard">
+                <div class="team-score-card">
+                    <!-- Make the team name in the header a link -->
+                    <h3><a href="{% url 'team_detail' team_id=match.team1.id %}">{{ match.team1.name }}</a></h3>
+                    <p class="score">{{ match.team1_score }}</p>
+                </div>
+                <div class="vs-divider">VS</div>
+                <div class="team-score-card">
+                     <!-- Make the team name in the header a link -->
+                    <h3><a href="{% url 'team_detail' team_id=match.team2.id %}">{{ match.team2.name }}</a></h3>
+                    <p class="score">{{ match.team2_score }}</p>
+                </div>
+            </div>
+            {% if match.status == 'live' and match.football_current_time %}
+                <div class="current-time">
+                    <p>Current Time: {{ match.football_current_time }}</p>
+                </div>
+            {% endif %}
+            <!-- Display goalscorers/events if using direct fields or the MatchEvent model -->
+            <!-- Example using MatchEvent (more scalable): -->
+            {% if events %}
+                <div class="match-events">
+                    <h4>Events</h4>
+                    <ul>
+                    {% for event in events %}
+                        <li>
+                            [{{ event.minute }}'] {{ event.event_type|title }}
+                            {% if event.player %} by <a href="{% url 'player_detail' player_id=event.player.id %}">{{ event.player.name }}</a> {% endif %}
+                            (<a href="{% url 'team_detail' team_id=event.team.id %}">{{ event.team.name }}</a>)
+                            {% if event.description %} - {{ event.description }} {% endif %}
+                        </li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+        {% else %}
+            <!-- Generic display for other sports -->
+             <div class="generic-scoreboard">
+                <div class="team-score-card">
+                     <!-- Make the team name in the header a link -->
+                    <h3><a href="{% url 'team_detail' team_id=match.team1.id %}">{{ match.team1.name }}</a></h3>
+                    <p class="score">{{ match.team1_score }}</p>
+                </div>
+                <div class="vs-divider">VS</div>
+                <div class="team-score-card">
+                     <!-- Make the team name in the header a link -->
+                    <h3><a href="{% url 'team_detail' team_id=match.team2.id %}">{{ match.team2.name }}</a></h3>
+                    <p class="score">{{ match.team2_score }}</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Player Squads Section -->
+    <section class="player-squads-section">
+        <h2>Playing Squads</h2>
+        <div class="squads-container">
+            <div class="team-squad">
+                 <!-- Make the squad team name header a link -->
+                <h3><a href="{% url 'team_detail' team_id=match.team1.id %}">{{ match.team1.name }}</a></h3>
+                {% if team1_players_records %}
+                    <table class="player-stats-table">
+                        <thead>
+                            <tr>
+                                <th>Player</th>
+                                <!-- Add headers based on sport -->
+                                {% if match.sport == 'cricket' %}
+                                    <th>Runs</th><th>Balls</th><th>Wkts</th><th>Overs</th>
+                                {% elif match.sport == 'football' %}
+                                    <th>Goals</th><th>Assists</th><th>YC</th><th>RC</th>
+                                {% endif %}
+                                <!-- Add more headers as needed -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in team1_players_records %}
+                                <tr>
+                                    <td>
+                                        <!-- Link player name to player detail page -->
+                                        <a href="{% url 'player_detail' player_id=record.player.id %}">{{ record.player.name }}</a>
+                                    </td>
+                                    {% if match.sport == 'cricket' %}
+                                        <td>{{ record.runs_scored|default:"-" }}</td>
+                                        <td>{{ record.balls_faced|default:"-" }}</td>
+                                        <td>{{ record.wickets_taken|default:"-" }}</td>
+                                        <td>{{ record.overs_bowled|default:"-" }}</td>
+                                    {% elif match.sport == 'football' %}
+                                        <td>{{ record.goals|default:"-" }}</td>
+                                        <td>{{ record.assists|default:"-" }}</td>
+                                        <td>{{ record.yellow_cards|default:"-" }}</td>
+                                        <td>{{ record.red_cards|default:"-" }}</td>
+                                    {% else %}
+                                         <!-- Default or placeholder for other sports -->
+                                         <td>-</td><td>-</td><td>-</td><td>-</td>
+                                    {% endif %}
+                                    <!-- Add more stats cells as needed -->
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>No player data available for {{ match.team1.name }}.</p>
+                {% endif %}
+            </div>
+
+            <div class="team-squad">
+                 <!-- Make the squad team name header a link -->
+                 <h3><a href="{% url 'team_detail' team_id=match.team2.id %}">{{ match.team2.name }}</a></h3>
+                {% if team2_players_records %}
+                     <table class="player-stats-table">
+                        <thead>
+                            <tr>
+                                <th>Player</th>
+                                <!-- Add headers based on sport -->
+                                {% if match.sport == 'cricket' %}
+                                    <th>Runs</th><th>Balls</th><th>Wkts</th><th>Overs</th>
+                                {% elif match.sport == 'football' %}
+                                    <th>Goals</th><th>Assists</th><th>YC</th><th>RC</th>
+                                {% endif %}
+                                <!-- Add more headers as needed -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in team2_players_records %}
+                                <tr>
+                                    <td>
+                                        <!-- Link player name to player detail page -->
+                                        <a href="{% url 'player_detail' player_id=record.player.id %}">{{ record.player.name }}</a>
+                                    </td>
+                                    {% if match.sport == 'cricket' %}
+                                        <td>{{ record.runs_scored|default:"-" }}</td>
+                                        <td>{{ record.balls_faced|default:"-" }}</td>
+                                        <td>{{ record.wickets_taken|default:"-" }}</td>
+                                        <td>{{ record.overs_bowled|default:"-" }}</td>
+                                    {% elif match.sport == 'football' %}
+                                        <td>{{ record.goals|default:"-" }}</td>
+                                        <td>{{ record.assists|default:"-" }}</td>
+                                        <td>{{ record.yellow_cards|default:"-" }}</td>
+                                        <td>{{ record.red_cards|default:"-" }}</td>
+                                    {% else %}
+                                         <!-- Default or placeholder for other sports -->
+                                         <td>-</td><td>-</td><td>-</td><td>-</td>
+                                    {% endif %}
+                                    <!-- Add more stats cells as needed -->
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>No player data available for {{ match.team2.name }}.</p>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+</div>
+{% endblock %}

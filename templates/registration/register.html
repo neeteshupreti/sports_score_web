@@ -1,0 +1,23 @@
+{% extends 'base.html' %} {% block content %}
+<div class="auth-container-modern">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h2>Create a KhelStats Account</h2>
+            <div class="section-divider"></div>
+        </div>
+        <form method="post" class="auth-form">
+            {% csrf_token %}
+            <div class="form-group-modern">{{ form.as_p }}</div>
+            <button type="submit" class="button-primary auth-btn">
+                <span>Register</span>
+            </button>
+        </form>
+        <div class="auth-footer">
+            <p>
+                Already have an account?
+                <a href="{% url 'login' %}" class="auth-link">Login here</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

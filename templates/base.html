@@ -1,0 +1,156 @@
+<!-- File: templates/base.html -->
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+        <title>KhelStats - Sports Scoring System</title>
+        {% load static %}
+        <link rel="stylesheet" href="{% static 'sports/css/styles.css' %}" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <header>
+            <div class="logo">
+                <a href="{% url 'home' %}">KhelStats</a>
+            </div>
+
+            <nav>
+                <!-- Main Navigation -->
+                <ul class="main-nav">
+                    <li>
+                        <a
+                            href="{% url 'home' %}"
+                            {%
+                            if
+                            request.resolver_match.url_name=""
+                            ="home"
+                            %}class="active"
+                            {%
+                            endif
+                            %}
+                            >Home</a
+                        >
+                    </li>
+                    <li>
+                        <a
+                            href="{% url 'scores' %}"
+                            {%
+                            if
+                            request.resolver_match.url_name=""
+                            ="scores"
+                            %}class="active"
+                            {%
+                            endif
+                            %}
+                            >Scores</a
+                        >
+                    </li>
+                    <li>
+                        <a
+                            href="{% url 'schedule' %}"
+                            {%
+                            if
+                            request.resolver_match.url_name=""
+                            ="schedule"
+                            %}class="active"
+                            {%
+                            endif
+                            %}
+                            >Schedule</a
+                        >
+                    </li>
+                    <!-- --- Add this line for the Series link --- -->
+                    <li>
+                        <a
+                            href="{% url 'series_list' %}"
+                            {%
+                            if
+                            request.resolver_match.url_name=""
+                            ="series_list"
+                            %}class="active"
+                            {%
+                            endif
+                            %}
+                            >Series</a
+                        >
+                    </li>
+                    <!-- --- End of addition --- -->
+                </ul>
+
+                <!-- Search Bar - Placed HERE, inside nav, before auth-nav -->
+                <div class="search-bar">
+                    <form action="{% url 'search' %}" method="get">
+                        <input
+                            type="text"
+                            name="q"
+                            placeholder="Search teams, matches..."
+                            value="{{ request.GET.q }}"
+                        />
+                        <button type="submit">Search</button>
+                    </form>
+                </div>
+
+                <!-- Authentication Navigation -->
+                <ul class="auth-nav">
+                    {% if user.is_authenticated %}
+                    <li>
+                        <a
+                            href="{% url 'profile' %}"
+                            {%
+                            if
+                            request.resolver_match.url_name=""
+                            ="profile"
+                            %}class="active"
+                            {%
+                            endif
+                            %}
+                        >
+                            <div class="avatar">
+                                {{ user.username|first|upper }}
+                            </div>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li><a href="{% url 'login' %}">Login</a></li>
+                    <li><a href="{% url 'register' %}">Register</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            <div class="container">
+                <!-- Display messages -->
+                {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %} {% block content %} {% endblock %}
+            </div>
+        </main>
+
+        <footer>
+            <div class="container">
+                <p>&copy; 2023 KhelStats. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="{% url 'home' %}">Home</a> |
+                    <a href="#">About</a> | <a href="#">Contact</a> |
+                    <a href="#">Privacy Policy</a>
+                </div>
+            </div>
+        </footer>
+
+        <script src="{% static 'sports/js/scripts.js' %}"></script>
+    </body>
+</html>

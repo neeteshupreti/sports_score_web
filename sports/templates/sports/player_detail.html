@@ -1,0 +1,142 @@
+<!-- File: sports/templates/sports/player_detail.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="player-detail-container">
+
+    <!-- Player Header -->
+    <div class="player-header card">
+        <div class="player-info-main">
+            {% if player.photo %}
+                <img src="{{ player.photo.url }}" alt="{{ player.name }}" class="player-photo-large">
+            {% else %}
+                <div class="player-photo-placeholder-large">{{ player.name|first|upper }}</div>
+            {% endif %}
+            <div class="player-meta">
+                <h1>{{ player.name }}</h1>
+                {% if player.role %}
+                    <p class="player-role">{{ player.role }}</p>
+                {% endif %}
+                {% if player.team %}
+                    <p class="player-current-team">Current Team: <a href="{% url 'team_detail' team_id=player.team.id %}">{{ player.team.name }}</a></p>
+                {% endif %}
+                {% if player.jersey_number %}
+                    <p class="player-jersey-number">Jersey #: {{ player.jersey_number }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Affiliated Teams Section -->
+    <section class="player-teams-section">
+        <h2>Affiliated Teams</h2>
+        {% if affiliated_teams %}
+            <div class="teams-list">
+                {% for team in affiliated_teams %}
+                    <div class="team-item">
+                         <a href="{% url 'team_detail' team_id=team.id %}">
+                            {% if team.logo %}
+                                <img src="{{ team.logo.url }}" alt="{{ team.name }} Logo" class="team-logo-small">
+                            {% else %}
+                                <div class="team-logo-placeholder-small">{{ team.name|first|upper }}</div>
+                            {% endif %}
+                            <span class="team-name">{{ team.name }}</span>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No affiliated teams found for this player.</p>
+        {% endif %}
+    </section>
+
+    <!-- Stats Section -->
+    <section class="player-stats-section">
+        <h2>Career Statistics</h2>
+        {% if player.team and player.team.sport == 'cricket' and cricket_batting_stats %}
+            <h3>Cricket Batting Stats</h3>
+            <div class="stats-tabs">
+                <ul class="nav nav-tabs">
+                    {% for format_name, stats in cricket_batting_stats.items %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if forloop.first %}active{% endif %}" 
+                               data-bs-toggle="tab" href="#{{ format_name|lower|slugify }}-batting">
+                               {{ format_name }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <div class="tab-content">
+                    {% for format_name, stats in cricket_batting_stats.items %}
+                        <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
+                             id="{{ format_name|lower|slugify }}-batting">
+                            <div class="stats-table-container">
+                                <table class="stats-table">
+                                    <tbody>
+                                        <tr><td>Matches</td><td>{{ stats.matches }}</td></tr>
+                                        <tr><td>Runs</td><td>{{ stats.runs }}</td></tr>
+                                        <tr><td>Balls Faced</td><td>{{ stats.balls_faced }}</td></tr>
+                                        <tr><td>4s</td><td>{{ stats.fours }}</td></tr>
+                                        <tr><td>6s</td><td>{{ stats.sixes }}</td></tr>
+                                        <tr><td>Not Outs</td><td>{{ stats.not_outs }}</td></tr>
+                                        <tr><td>Highest Score</td><td>{{ stats.highest_score }}</td></tr>
+                                        <tr><td>Average</td><td>{{ stats.average }}</td></tr>
+                                        <tr><td>Strike Rate</td><td>{{ stats.strike_rate }}</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <!-- Add similar sections for Bowling, Fielding stats if data is available -->
+            
+        {% elif player.team and player.team.sport == 'football' and football_stats %}
+            <h3>Football Stats</h3>
+            <div class="stats-tabs">
+                 <ul class="nav nav-tabs">
+                    {% for format_name, stats in football_stats.items %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if forloop.first %}active{% endif %}" 
+                               data-bs-toggle="tab" href="#{{ format_name|lower|slugify }}-football">
+                               {{ format_name }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <div class="tab-content">
+                    {% for format_name, stats in football_stats.items %}
+                        <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
+                             id="{{ format_name|lower|slugify }}-football">
+                            <div class="stats-table-container">
+                                <table class="stats-table">
+                                    <tbody>
+                                        <tr><td>Matches</td><td>{{ stats.matches }}</td></tr>
+                                        <tr><td>Goals</td><td>{{ stats.goals }}</td></tr>
+                                        <tr><td>Assists</td><td>{{ stats.assists }}</td></tr>
+                                        <tr><td>Yellow Cards</td><td>{{ stats.yellow_cards }}</td></tr>
+                                        <tr><td>Red Cards</td><td>{{ stats.red_cards }}</td></tr>
+                                        <!-- Add more football stats rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% else %}
+            <p>Statistics are not available for this player.</p>
+        {% endif %}
+    </section>
+
+    <!-- Optional: Recent Matches Section -->
+    <!-- 
+    <section class="player-recent-matches-section">
+        <h2>Recent Matches</h2>
+         Implement similar to team/tournament recent matches if needed 
+    </section>
+    -->
+
+</div>
+{% endblock %}
